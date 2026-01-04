@@ -3,16 +3,19 @@ import rasterio
 from rasterio import windows
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
+from torchvision.transforms.functional import adjust_brightness, adjust_contrast
 
 
 class InferenceDataset(Dataset):
-    def __init__(self, image_src, tile_size=512, padding=56):
+    def __init__(self, image_src, tile_size=512, padding=56, brightness_factor=1.5, contrast_factor=1.3):
         super(InferenceDataset, self).__init__()
         self.tile_size = tile_size
         self.padding = padding
         self.image_src = image_src
         self.width = self.image_src.width
         self.height = self.image_src.height
+        self.brightness_factor = brightness_factor
+        self.contrast_factor = contrast_factor
 
         self.cropped_windows = [
             window
@@ -83,16 +86,22 @@ class InferenceDataset(Dataset):
         # Reshape the image tensor to have 3 channels
         image = image.transpose(1, 2, 0)
 
-        image_transforms = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize(
+        # Convert to tensor first
+        to_tensor = transforms.ToTensor()
+        image_tensor = to_tensor(image).float()
+
+        # Apply brightness and contrast adjustments after tensor conversion but before normalization
+        if self.brightness_factor != 1.0:
+            image_tensor = adjust_brightness(image_tensor, self.brightness_factor)
+        if self.contrast_factor != 1.0:
+            image_tensor = adjust_contrast(image_tensor, self.contrast_factor)
+
+        # Apply normalization
+        normalize = transforms.Normalize(
                     mean=[0.485, 0.456, 0.406],
                     std=[0.229, 0.224, 0.225],
-                ),
-            ]
         )
-        image_tensor = image_transforms(image).float().contiguous()
+        image_tensor = normalize(image_tensor).contiguous()
 
         return nodata_mask, image_tensor, cropped_window_dict
 
