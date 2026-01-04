@@ -8,7 +8,9 @@ pathlist = sys.argv[1]
 
 deadwodinference = DeadwoodInference(
     config_path=
-    "/net/home/cmosig/projects/deadtreesmodels/deadwood_inference_config_new.json")
+    "deadwood_inference_config.json"
+    #"/net/home/cmosig/projects/deadtreesmodels/deadwood_inference_config_new.json"
+    )
 
 with open(pathlist) as f:
     files = f.readlines()
