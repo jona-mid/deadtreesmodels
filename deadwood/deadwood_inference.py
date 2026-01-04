@@ -126,7 +126,7 @@ class DeadwoodInference:
                 minx = cropped_windows["col_off"][i]
                 maxx = minx + cropped_windows["width"][i]
                 miny = cropped_windows["row_off"][i]
-                maxy = miny + cropped_windows["width"][i]
+                maxy = miny + cropped_windows["height"][i]
 
                 # clip to positive values when writing and also to the image size
                 diff_minx = 0
